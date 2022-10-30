@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee+Shade&family=Fira+Code&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <title>Snake</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Snake Game</h1>
+        <canvas></canvas>
+        <div class="panel game-start">
+            <h2>START</h2>
+            <p>&raquo; press SPACE to play the game &laquo;</p>
+        </div>
+        <div class="panel game-over hidden">
+            <h2>GAME OVER</h2>
+            <p>&raquo; press SPACE to play again &laquo;</p>
+        </div>
+        <dir class="score-board">
+            <div>Score: <span class="score">0</span></div>
+            <div>Best: <span class="best">0</span></div>
+        </dir>
+    </div>
+
+    <footer>
+        Copyright &copy; 2022 by rosiiietsai. All rights reserved.
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

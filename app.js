@@ -12,7 +12,6 @@ const appleColor = 'red';
 const tileCount = 40;
 const tileBorder = 1;
 const tileSize = canvas.width / tileCount - tileBorder * 2;
-// canvas.width = (tileSize + tileBorder * 2 ) * tileCount
 const directionDown = 1;
 const directionUp = 2;
 const directionRight = 3;
@@ -23,7 +22,7 @@ let isGameOver = true;
 let snake = {};
 let apple = {};
 
-// position of the game field
+// tile position of the game field
 class Position {
   constructor(x, y) {
     this.x = x;
@@ -31,9 +30,10 @@ class Position {
   }
 }
 
-// snake state
+// initial snake state
 class Snake {
-  head = new Position(20, 20);
+  // head is in the middle of the game field
+  head = new Position(tileCount / 2, tileCount / 2);
   length = 1;
   body = [];
   vx = 0;
@@ -41,15 +41,18 @@ class Snake {
   direction = 0;
 }
 
-const getPosition = function (x) {
-  return x * (tileSize + tileBorder * 2) + tileBorder / 2;
+// convert tile position to pixels
+const getPixels = function (tiles) {
+  return tiles * (tileSize + tileBorder * 2) + tileBorder / 2;
 };
 
+// generate an apple randomly on the game field
 const generateApple = function () {
   const randomPosition = () => Math.floor(Math.random() * tileCount);
   apple = new Position(randomPosition(), randomPosition());
 };
 
+// clear game field
 const clear = function () {
   ctx.fillStyle = primaryColorDark;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -57,18 +60,20 @@ const clear = function () {
 
 const drawApple = function () {
   ctx.fillStyle = appleColor;
-  ctx.fillRect(getPosition(apple.x), getPosition(apple.y), tileSize, tileSize);
+  ctx.fillRect(getPixels(apple.x), getPixels(apple.y), tileSize, tileSize);
 };
 
 const drawSnake = function () {
-  // store current snake body
+  // update current snake body position (including head)
   snake.body.push(new Position(snake.head.x, snake.head.y));
+
+  // remove the previous position if it doesn't eat an apple
   if (snake.body.length > snake.length) snake.body.shift();
 
   // draw snake
   ctx.fillStyle = primaryColorLight;
   snake.body.forEach(b => {
-    ctx.fillRect(getPosition(b.x), getPosition(b.y), tileSize, tileSize);
+    ctx.fillRect(getPixels(b.x), getPixels(b.y), tileSize, tileSize);
   });
 };
 
@@ -111,19 +116,20 @@ const checkEatApple = function () {
   }
 };
 
+// add speed when eat 5 apples
 const addSpeed = function () {
-  if (snake.length % 5 === 0) {
+  if (snake.length !== 1 && (snake.length - 1) % 5 === 0) {
     speed += 2.5;
 
     // update game speed
     clearInterval(gameInterval);
-    gameInterval = setInterval(game, 1000 / speed);
+    gameInterval = setInterval(updateField, 1000 / speed);
   }
 };
 
 const controlSnake = function (e) {
   if (e.key === 'ArrowUp') {
-    // avoid going another direction directly
+    // avoid going opposite direction directly
     if (snake.direction === directionDown) return;
     snake.vx = 0;
     snake.vy = -1;
@@ -153,24 +159,15 @@ const controlSnake = function (e) {
   // }
 };
 
-const changeDirection = function () {
+const updateDirection = function () {
   if (snake.vx === 0 && snake.vy === -1) snake.direction = directionUp;
   if (snake.vx === 0 && snake.vy === 1) snake.direction = directionDown;
   if (snake.vx === -1 && snake.vy === 0) snake.direction = directionLeft;
   if (snake.vx === 1 && snake.vy === 0) snake.direction = directionRight;
 };
 
-const gameInit = function () {
-  isGameOver = false;
-  speed = 10;
-  document.querySelector('.score').textContent = score = 0;
-  snake = new Snake();
-  generateApple();
-
-  gameInterval = setInterval(game, 1000 / speed);
-};
-
-const game = function () {
+// update game field
+const updateField = function () {
   // change position
   snake.head.x += snake.vx;
   snake.head.y += snake.vy;
@@ -180,18 +177,25 @@ const game = function () {
   checkEatApple();
   drawSnake();
   checkGameOver();
-  changeDirection();
+  updateDirection();
 };
 
-const startGame = function (e) {
-  if (e.code === 'Space' && isGameOver) {
-    document.querySelector('.game-start').classList.add('hidden');
-    document.querySelector('.game-over').classList.add('hidden');
-    gameInit();
-  }
+const gameInit = function (e) {
+  if (e.code !== 'Space' || !isGameOver) return;
+
+  document.querySelector('.game-start').classList.add('hidden');
+  document.querySelector('.game-over').classList.add('hidden');
+  document.querySelector('.score').textContent = score = 0;
+
+  isGameOver = false;
+  speed = 10;
+  snake = new Snake();
+  generateApple();
+
+  gameInterval = setInterval(updateField, 1000 / speed);
 };
 
 document.addEventListener('keydown', function (e) {
+  gameInit(e);
   controlSnake(e);
-  startGame(e);
 });
